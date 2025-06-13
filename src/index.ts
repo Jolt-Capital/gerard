@@ -4,6 +4,9 @@ import { Command } from 'commander';
 import { createCommand } from './commands/create';
 import { listCommand } from './commands/list';
 import { deleteCommand } from './commands/delete';
+import { addFileCommand } from './commands/add-file';
+import { listFilesCommand } from './commands/list-files';
+import { deleteFileCommand } from './commands/delete-file';
 
 const program = new Command();
 
@@ -15,5 +18,8 @@ program
 program.addCommand(createCommand);
 program.addCommand(listCommand);
 program.addCommand(deleteCommand);
+program.addCommand(addFileCommand);
+program.addCommand(listFilesCommand);
+program.addCommand(deleteFileCommand);
 
 program.parse();

@@ -1,0 +1,11 @@
+This is a sample text file for testing the Gerard CLI file upload functionality.
+
+The file contains some basic content that can be uploaded to an OpenAI vector store for testing purposes.
+
+Key features being tested:
+- File upload to OpenAI
+- Adding files to vector stores
+- Error handling for missing files
+- File validation and feedback
+
+This test file should be successfully processed by the add-file command.

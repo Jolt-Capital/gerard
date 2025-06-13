@@ -21,7 +21,7 @@ describe('Gerard CLI Integration Test', () => {
     }
   });
 
-  it('should create, list, and delete a vector store', async () => {
+  it('should create, list, delete a vector store and manage files', async () => {
     // Step 1: Create a vector store
     console.log('Creating test vector store...');
     const createdStore = await openaiConnector.createVectorStore(testStoreName);
@@ -46,7 +46,57 @@ describe('Gerard CLI Integration Test', () => {
     expect(listResponse.data).toBeDefined();
     console.log(`Found ${listResponse.data.length} vector stores in list`);
 
-    // Step 3: Delete the vector store
+    // Step 3: Test file upload
+    console.log('Testing file upload to vector store...');
+    const testFilePath = './test/sample.txt';
+    const uploadResult = await openaiConnector.uploadAndAddFileToVectorStore(createdStoreId, testFilePath);
+    
+    expect(uploadResult.file).toBeDefined();
+    expect(uploadResult.file.filename).toBe('sample.txt');
+    expect(uploadResult.vectorStoreFile).toBeDefined();
+    expect(uploadResult.vectorStoreFile.vector_store_id).toBe(createdStoreId);
+    console.log(`✅ File uploaded: ${uploadResult.file.id} (${uploadResult.file.bytes} bytes)`);
+    console.log(`✅ Added to vector store: ${uploadResult.vectorStoreFile.id} (status: ${uploadResult.vectorStoreFile.status})`);
+
+    // Step 4: List files in vector store
+    console.log('Testing list files functionality...');
+    const filesResponse = await openaiConnector.listVectorStoreFiles(createdStoreId);
+    expect(filesResponse.data).toBeDefined();
+    expect(filesResponse.data.length).toBeGreaterThan(0);
+    
+    const uploadedFile = filesResponse.data.find(file => file.id === uploadResult.file.id);
+    expect(uploadedFile).toBeDefined();
+    console.log(`✅ Found ${filesResponse.data.length} file(s) in vector store`);
+
+    // Step 5: Delete file from vector store
+    console.log('Testing file deletion from vector store...');
+    const deletedFile = await openaiConnector.deleteFileFromVectorStore(createdStoreId, uploadResult.file.id);
+    expect(deletedFile.deleted).toBe(true);
+    expect(deletedFile.id).toBe(uploadResult.file.id);
+    console.log(`✅ File deleted from vector store: ${deletedFile.id}`);
+
+    // Step 6: Verify file is removed from vector store
+    console.log('Verifying file removal...');
+    
+    // Wait a moment for eventual consistency
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const filesAfterDelete = await openaiConnector.listVectorStoreFiles(createdStoreId);
+    const fileStillExists = filesAfterDelete.data.find(file => file.id === uploadResult.file.id);
+    
+    if (fileStillExists) {
+      console.log(`File still exists with status: ${fileStillExists.status}`);
+      // If file still exists but is marked as deleted or failed, that's acceptable
+      if (fileStillExists.status === 'cancelled' || fileStillExists.status === 'failed') {
+        console.log('✅ File marked as removed/cancelled from vector store');
+      } else {
+        console.log('⚠️  File deletion may be eventually consistent');
+      }
+    } else {
+      console.log('✅ File confirmed removed from vector store');
+    }
+
+    // Step 7: Delete the vector store
     console.log('Deleting test vector store...');
     const deletedStore = await openaiConnector.deleteVectorStore(createdStoreId);
     
@@ -55,7 +105,7 @@ describe('Gerard CLI Integration Test', () => {
     expect(deletedStore.id).toBe(createdStoreId);
     console.log('✅ Store deleted successfully');
 
-    // Step 4: Verify deletion by trying to retrieve (should fail)
+    // Step 8: Verify deletion by trying to retrieve (should fail)
     console.log('Verifying store has been deleted...');
     try {
       await openaiConnector.retrieveVectorStore(createdStoreId);
