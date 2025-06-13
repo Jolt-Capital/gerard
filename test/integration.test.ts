@@ -96,19 +96,34 @@ describe('Gerard CLI Integration Test', () => {
       console.log('✅ File confirmed removed from vector store');
     }
 
-    // Step 7: Test directory upload
+    // Step 7: Test directory upload (non-recursive)
     console.log('Testing directory upload functionality...');
     const testDirPath = './test/sample-dir';
-    const dirUploadResult = await openaiConnector.uploadDirectoryToVectorStore(createdStoreId, testDirPath);
+    const dirUploadResult = await openaiConnector.uploadDirectoryToVectorStore(createdStoreId, testDirPath, false);
     
     expect(dirUploadResult.results.length).toBeGreaterThan(0);
     expect(dirUploadResult.errors.length).toBe(0);
     console.log(`✅ Directory upload completed: ${dirUploadResult.results.length} files uploaded`);
     
     // Verify files were added
-    const filesAfterDirUpload = await openaiConnector.listVectorStoreFiles(createdStoreId);
+    let filesAfterDirUpload = await openaiConnector.listVectorStoreFiles(createdStoreId);
     expect(filesAfterDirUpload.data.length).toBe(dirUploadResult.results.length);
     console.log(`✅ Verified ${filesAfterDirUpload.data.length} files in vector store after directory upload`);
+
+    // Step 7.5: Test recursive directory upload
+    console.log('Testing recursive directory upload functionality...');
+    const recursiveDirPath = './test/recursive-test';
+    const recursiveUploadResult = await openaiConnector.uploadDirectoryToVectorStore(createdStoreId, recursiveDirPath, true);
+    
+    expect(recursiveUploadResult.results.length).toBe(3); // root-file.txt, subdir1/subdir1-file.md, subdir1/subdir2/deep-file.json
+    expect(recursiveUploadResult.errors.length).toBe(0);
+    console.log(`✅ Recursive upload completed: ${recursiveUploadResult.results.length} files uploaded`);
+    
+    // Verify all files including nested ones were added
+    filesAfterDirUpload = await openaiConnector.listVectorStoreFiles(createdStoreId);
+    const totalExpectedFiles = dirUploadResult.results.length + recursiveUploadResult.results.length;
+    expect(filesAfterDirUpload.data.length).toBe(totalExpectedFiles);
+    console.log(`✅ Verified ${filesAfterDirUpload.data.length} total files after recursive upload`);
 
     // Step 8: Test chat functionality
     console.log('Testing chat functionality with vector store...');

@@ -38,11 +38,11 @@ export const addDirCommand = new Command()
       console.log('⏳ Starting bulk upload...\n');
       
       if (options.includeSubdirs) {
-        console.log('🔄 Recursive upload not yet implemented. Adding files from root directory only.');
+        console.log('🔄 Recursive mode enabled - processing subdirectories...');
       }
 
       // Add all files from directory
-      const uploadResult = await openaiConnector.uploadDirectoryToVectorStore(vectorStoreId, directoryPath);
+      const uploadResult = await openaiConnector.uploadDirectoryToVectorStore(vectorStoreId, directoryPath, options.includeSubdirs);
 
       console.log('\n📊 Upload Summary:');
       console.log(`✅ Successfully uploaded: ${uploadResult.results.length} files`);

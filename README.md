@@ -51,6 +51,9 @@ gerard delete-file vs_abc123def456 file-xyz789abc123
 # Add all files from a directory
 gerard add-dir vs_abc123def456 ./documents/
 
+# Add all files from a directory recursively (including subdirectories)
+gerard add-dir vs_abc123def456 ./documents/ --include-subdirs
+
 # Start interactive chat with vector store
 gerard chat vs_abc123def456
 

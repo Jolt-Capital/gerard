@@ -1,0 +1,5 @@
+{
+  "name": "deep-file",
+  "location": "subdir1/subdir2",
+  "purpose": "Testing recursive directory upload"
+}

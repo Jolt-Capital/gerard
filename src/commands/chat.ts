@@ -33,18 +33,22 @@ export const chatCommand = new Command()
             options.model
           );
 
-          // Parse the response output
+          // Use the convenient output_text field if available, otherwise parse the output array
           let outputText = '';
-          if (Array.isArray(response.output)) {
-            outputText = response.output.map((item: any) => {
-              if (item.type === 'text') {
-                return item.text;
-              } else if (item.type === 'file_search_call') {
-                return item.result?.content || 'File search completed';
-              } else {
-                return item.content || item.text || '';
+          
+          if ((response as any).output_text) {
+            outputText = (response as any).output_text;
+          } else if (Array.isArray(response.output)) {
+            for (const item of response.output) {
+              if (item.type === 'message' && item.content) {
+                // Extract text from message content
+                for (const content of item.content) {
+                  if (content.type === 'output_text' && content.text) {
+                    outputText += content.text;
+                  }
+                }
               }
-            }).filter(text => text).join('\n');
+            }
           } else {
             outputText = String(response.output);
           }
@@ -69,7 +73,7 @@ export const chatCommand = new Command()
       }
 
       // Interactive chat mode
-      console.log('🚀 Interactive chat started! Type "exit" or "quit" to end the session.\n');
+      console.log('🚀 Interactive chat started! Type "exit", "quit", or "/quit" to end the session.\n');
       
       const rl = readline.createInterface({
         input: process.stdin,
@@ -103,18 +107,22 @@ export const chatCommand = new Command()
                 options.model
               );
 
-              // Parse the response output
+              // Use the convenient output_text field if available, otherwise parse the output array
           let outputText = '';
-          if (Array.isArray(response.output)) {
-            outputText = response.output.map((item: any) => {
-              if (item.type === 'text') {
-                return item.text;
-              } else if (item.type === 'file_search_call') {
-                return item.result?.content || 'File search completed';
-              } else {
-                return item.content || item.text || '';
+          
+          if ((response as any).output_text) {
+            outputText = (response as any).output_text;
+          } else if (Array.isArray(response.output)) {
+            for (const item of response.output) {
+              if (item.type === 'message' && item.content) {
+                // Extract text from message content
+                for (const content of item.content) {
+                  if (content.type === 'output_text' && content.text) {
+                    outputText += content.text;
+                  }
+                }
               }
-            }).filter(text => text).join('\n');
+            }
           } else {
             outputText = String(response.output);
           }

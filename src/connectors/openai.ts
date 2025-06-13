@@ -55,37 +55,54 @@ export class OpenAIConnector {
     });
   }
 
-  async uploadDirectoryToVectorStore(vectorStoreId: string, directoryPath: string) {
+  async uploadDirectoryToVectorStore(vectorStoreId: string, directoryPath: string, recursive: boolean = false) {
     const fs = await import('fs');
     const path = await import('path');
 
-    // Read directory contents
-    const files = fs.readdirSync(directoryPath);
-    const results = [];
-    const errors = [];
+    const results: any[] = [];
+    const errors: any[] = [];
+    let totalFiles = 0;
 
-    for (const fileName of files) {
-      const filePath = path.join(directoryPath, fileName);
-      const stat = fs.statSync(filePath);
+    const processDirectory = async (currentPath: string, relativePath: string = '') => {
+      const items = fs.readdirSync(currentPath);
+      
+      for (const itemName of items) {
+        const itemPath = path.join(currentPath, itemName);
+        const stat = fs.statSync(itemPath);
+        const displayPath = relativePath ? path.join(relativePath, itemName) : itemName;
 
-      // Skip directories and hidden files
-      if (stat.isDirectory() || fileName.startsWith('.')) {
-        continue;
+        if (stat.isDirectory()) {
+          if (recursive && !itemName.startsWith('.')) {
+            // Recursively process subdirectory
+            await processDirectory(itemPath, displayPath);
+          }
+          // Skip directories themselves
+          continue;
+        }
+
+        // Skip hidden files
+        if (itemName.startsWith('.')) {
+          continue;
+        }
+
+        totalFiles++;
+
+        try {
+          console.log(`📁 Uploading: ${displayPath} (${(stat.size / 1024).toFixed(1)} KB)`);
+          const result = await this.uploadAndAddFileToVectorStore(vectorStoreId, itemPath);
+          results.push({ fileName: displayPath, filePath: itemPath, ...result });
+          console.log(`✅ Uploaded: ${displayPath}`);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error(`❌ Failed to upload ${displayPath}: ${errorMessage}`);
+          errors.push({ fileName: displayPath, filePath: itemPath, error: errorMessage });
+        }
       }
+    };
 
-      try {
-        console.log(`📁 Uploading: ${fileName} (${(stat.size / 1024).toFixed(1)} KB)`);
-        const result = await this.uploadAndAddFileToVectorStore(vectorStoreId, filePath);
-        results.push({ fileName, filePath, ...result });
-        console.log(`✅ Uploaded: ${fileName}`);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`❌ Failed to upload ${fileName}: ${errorMessage}`);
-        errors.push({ fileName, filePath, error: errorMessage });
-      }
-    }
+    await processDirectory(directoryPath);
 
-    return { results, errors, totalFiles: files.length };
+    return { results, errors, totalFiles };
   }
 
   async chatWithVectorStore(input: string, vectorStoreIds: string[], model: string = 'gpt-4o-mini') {
