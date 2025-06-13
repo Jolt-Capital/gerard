@@ -1,0 +1,11 @@
+{
+  "name": "test-data",
+  "version": "1.0.0",
+  "description": "Sample JSON file for directory upload testing",
+  "files": ["file1.txt", "file2.md", "file3.json"],
+  "features": {
+    "bulk_upload": true,
+    "error_handling": true,
+    "progress_tracking": true
+  }
+}

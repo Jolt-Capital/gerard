@@ -54,6 +54,39 @@ export class OpenAIConnector {
       vector_store_id: vectorStoreId,
     });
   }
+
+  async uploadDirectoryToVectorStore(vectorStoreId: string, directoryPath: string) {
+    const fs = await import('fs');
+    const path = await import('path');
+
+    // Read directory contents
+    const files = fs.readdirSync(directoryPath);
+    const results = [];
+    const errors = [];
+
+    for (const fileName of files) {
+      const filePath = path.join(directoryPath, fileName);
+      const stat = fs.statSync(filePath);
+
+      // Skip directories and hidden files
+      if (stat.isDirectory() || fileName.startsWith('.')) {
+        continue;
+      }
+
+      try {
+        console.log(`📁 Uploading: ${fileName} (${(stat.size / 1024).toFixed(1)} KB)`);
+        const result = await this.uploadAndAddFileToVectorStore(vectorStoreId, filePath);
+        results.push({ fileName, filePath, ...result });
+        console.log(`✅ Uploaded: ${fileName}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`❌ Failed to upload ${fileName}: ${errorMessage}`);
+        errors.push({ fileName, filePath, error: errorMessage });
+      }
+    }
+
+    return { results, errors, totalFiles: files.length };
+  }
 }
 
 // Default instance for convenience

@@ -21,7 +21,7 @@ describe('Gerard CLI Integration Test', () => {
     }
   });
 
-  it('should create, list, delete a vector store and manage files', async () => {
+  it('should create, list, delete a vector store and manage files including bulk upload', async () => {
     // Step 1: Create a vector store
     console.log('Creating test vector store...');
     const createdStore = await openaiConnector.createVectorStore(testStoreName);
@@ -96,7 +96,21 @@ describe('Gerard CLI Integration Test', () => {
       console.log('✅ File confirmed removed from vector store');
     }
 
-    // Step 7: Delete the vector store
+    // Step 7: Test directory upload
+    console.log('Testing directory upload functionality...');
+    const testDirPath = './test/sample-dir';
+    const dirUploadResult = await openaiConnector.uploadDirectoryToVectorStore(createdStoreId, testDirPath);
+    
+    expect(dirUploadResult.results.length).toBeGreaterThan(0);
+    expect(dirUploadResult.errors.length).toBe(0);
+    console.log(`✅ Directory upload completed: ${dirUploadResult.results.length} files uploaded`);
+    
+    // Verify files were added
+    const filesAfterDirUpload = await openaiConnector.listVectorStoreFiles(createdStoreId);
+    expect(filesAfterDirUpload.data.length).toBe(dirUploadResult.results.length);
+    console.log(`✅ Verified ${filesAfterDirUpload.data.length} files in vector store after directory upload`);
+
+    // Step 8: Delete the vector store
     console.log('Deleting test vector store...');
     const deletedStore = await openaiConnector.deleteVectorStore(createdStoreId);
     
@@ -105,7 +119,7 @@ describe('Gerard CLI Integration Test', () => {
     expect(deletedStore.id).toBe(createdStoreId);
     console.log('✅ Store deleted successfully');
 
-    // Step 8: Verify deletion by trying to retrieve (should fail)
+    // Step 9: Verify deletion by trying to retrieve (should fail)
     console.log('Verifying store has been deleted...');
     try {
       await openaiConnector.retrieveVectorStore(createdStoreId);

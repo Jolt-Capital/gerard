@@ -7,6 +7,7 @@ import { deleteCommand } from './commands/delete';
 import { addFileCommand } from './commands/add-file';
 import { listFilesCommand } from './commands/list-files';
 import { deleteFileCommand } from './commands/delete-file';
+import { addDirCommand } from './commands/add-dir';
 
 const program = new Command();
 
@@ -21,5 +22,6 @@ program.addCommand(deleteCommand);
 program.addCommand(addFileCommand);
 program.addCommand(listFilesCommand);
 program.addCommand(deleteFileCommand);
+program.addCommand(addDirCommand);
 
 program.parse();

@@ -24,6 +24,7 @@ export OPENAI_API_KEY=your_api_key_here
 - `gerard add-file <vectorStoreId> <filePath>` - Upload a file to a vector store
 - `gerard list-files <vectorStoreId>` - List all files in a vector store
 - `gerard delete-file <vectorStoreId> <fileId>` - Delete a file from a vector store
+- `gerard add-dir <vectorStoreId> <directoryPath>` - Add all files from a directory
 
 ### Examples
 
@@ -45,6 +46,9 @@ gerard list-files vs_abc123def456
 
 # Delete a file from a vector store
 gerard delete-file vs_abc123def456 file-xyz789abc123
+
+# Add all files from a directory
+gerard add-dir vs_abc123def456 ./documents/
 ```
 
 ## Development
