@@ -1,9 +1,5 @@
 import { Command } from 'commander';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openaiConnector } from '../connectors';
 
 export const listCommand = new Command()
   .name('list')
@@ -12,7 +8,7 @@ export const listCommand = new Command()
     try {
       console.log('Fetching vector stores...');
       
-      const vectorStores = await openai.vectorStores.list();
+      const vectorStores = await openaiConnector.listVectorStores();
 
       if (vectorStores.data.length === 0) {
         console.log('No vector stores found.');

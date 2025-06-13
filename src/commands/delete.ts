@@ -1,9 +1,5 @@
 import { Command } from 'commander';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openaiConnector } from '../connectors';
 
 export const deleteCommand = new Command()
   .name('delete')
@@ -14,11 +10,11 @@ export const deleteCommand = new Command()
       console.log(`Deleting vector store: ${id}...`);
       
       // First, get the vector store details to show what we're deleting
-      const vectorStore = await openai.vectorStores.retrieve(id);
+      const vectorStore = await openaiConnector.retrieveVectorStore(id);
       console.log(`Found vector store: ${vectorStore.name || 'Unnamed'}`);
       
       // Delete the vector store
-      const deletedStore = await openai.vectorStores.delete(id);
+      const deletedStore = await openaiConnector.deleteVectorStore(id);
       
       if (deletedStore.deleted) {
         console.log(`✅ Vector store deleted successfully!`);

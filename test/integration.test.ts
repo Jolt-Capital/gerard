@@ -1,8 +1,4 @@
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openaiConnector } from '../src/connectors';
 
 describe('Gerard CLI Integration Test', () => {
   const testStoreName = 'testStore';
@@ -18,7 +14,7 @@ describe('Gerard CLI Integration Test', () => {
     // Cleanup: ensure test store is deleted even if test fails
     if (createdStoreId) {
       try {
-        await openai.vectorStores.delete(createdStoreId);
+        await openaiConnector.deleteVectorStore(createdStoreId);
       } catch (error) {
         // Ignore cleanup errors
       }
@@ -28,9 +24,7 @@ describe('Gerard CLI Integration Test', () => {
   it('should create, list, and delete a vector store', async () => {
     // Step 1: Create a vector store
     console.log('Creating test vector store...');
-    const createdStore = await openai.vectorStores.create({
-      name: testStoreName,
-    });
+    const createdStore = await openaiConnector.createVectorStore(testStoreName);
 
     expect(createdStore).toBeDefined();
     expect(createdStore.name).toBe(testStoreName);
@@ -41,20 +35,20 @@ describe('Gerard CLI Integration Test', () => {
 
     // Step 2: Verify store exists by direct retrieval
     console.log('Verifying store exists by direct retrieval...');
-    const retrievedStore = await openai.vectorStores.retrieve(createdStoreId);
+    const retrievedStore = await openaiConnector.retrieveVectorStore(createdStoreId);
     expect(retrievedStore).toBeDefined();
     expect(retrievedStore.name).toBe(testStoreName);
     console.log('✅ Store verified by direct retrieval');
 
     // Also test listing (might be paginated)
     console.log('Testing list functionality...');
-    const listResponse = await openai.vectorStores.list({ limit: 100 });
+    const listResponse = await openaiConnector.listVectorStores({ limit: 100 });
     expect(listResponse.data).toBeDefined();
     console.log(`Found ${listResponse.data.length} vector stores in list`);
 
     // Step 3: Delete the vector store
     console.log('Deleting test vector store...');
-    const deletedStore = await openai.vectorStores.delete(createdStoreId);
+    const deletedStore = await openaiConnector.deleteVectorStore(createdStoreId);
     
     expect(deletedStore).toBeDefined();
     expect(deletedStore.deleted).toBe(true);
@@ -64,7 +58,7 @@ describe('Gerard CLI Integration Test', () => {
     // Step 4: Verify deletion by trying to retrieve (should fail)
     console.log('Verifying store has been deleted...');
     try {
-      await openai.vectorStores.retrieve(createdStoreId);
+      await openaiConnector.retrieveVectorStore(createdStoreId);
       throw new Error('Store should not exist after deletion');
     } catch (error) {
       // This is expected - the store should not exist

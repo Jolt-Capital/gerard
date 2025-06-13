@@ -1,9 +1,5 @@
 import { Command } from 'commander';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openaiConnector } from '../connectors';
 
 export const createCommand = new Command()
   .name('create')
@@ -13,9 +9,7 @@ export const createCommand = new Command()
     try {
       console.log(`Creating vector store: ${name}...`);
       
-      const vectorStore = await openai.vectorStores.create({
-        name: name,
-      });
+      const vectorStore = await openaiConnector.createVectorStore(name);
 
       console.log(`✅ Vector store created successfully!`);
       console.log(`ID: ${vectorStore.id}`);
