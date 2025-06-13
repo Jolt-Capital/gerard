@@ -25,6 +25,7 @@ export OPENAI_API_KEY=your_api_key_here
 - `gerard list-files <vectorStoreId>` - List all files in a vector store
 - `gerard delete-file <vectorStoreId> <fileId>` - Delete a file from a vector store
 - `gerard add-dir <vectorStoreId> <directoryPath>` - Add all files from a directory
+- `gerard chat <vectorStoreId>` - Start interactive chat with a vector store
 
 ### Examples
 
@@ -49,6 +50,15 @@ gerard delete-file vs_abc123def456 file-xyz789abc123
 
 # Add all files from a directory
 gerard add-dir vs_abc123def456 ./documents/
+
+# Start interactive chat with vector store
+gerard chat vs_abc123def456
+
+# Send a single message to vector store
+gerard chat vs_abc123def456 --single "What is this document about?"
+
+# Use a different model for chat
+gerard chat vs_abc123def456 --model gpt-4o
 ```
 
 ## Development

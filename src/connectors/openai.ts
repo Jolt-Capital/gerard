@@ -87,6 +87,17 @@ export class OpenAIConnector {
 
     return { results, errors, totalFiles: files.length };
   }
+
+  async chatWithVectorStore(input: string, vectorStoreIds: string[], model: string = 'gpt-4o-mini') {
+    return await this.client.responses.create({
+      model,
+      input,
+      tools: [{
+        type: 'file_search',
+        vector_store_ids: vectorStoreIds,
+      }],
+    });
+  }
 }
 
 // Default instance for convenience
